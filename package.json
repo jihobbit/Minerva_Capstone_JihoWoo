@@ -1,0 +1,30 @@
+{
+  "name": "minerva-capstone-jihowoo",
+  "version": "1.0.0",
+  "description": "Claude Code skill for structured rubric (HC/LO) feedback on Minerva University assignments",
+  "bin": {
+    "minerva-capstone-jihowoo": "./bin/install.js"
+  },
+  "files": [
+    "bin/",
+    ".claude/",
+    "scripts/"
+  ],
+  "keywords": [
+    "minerva",
+    "claude-code",
+    "rubric",
+    "feedback",
+    "hc",
+    "learning-outcomes",
+    "skill"
+  ],
+  "license": "MIT",
+  "engines": {
+    "node": ">=14"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/jihobbit/Minerva_Capstone_JihoWoo.git"
+  }
+}
