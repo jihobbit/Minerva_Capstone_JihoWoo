@@ -1,0 +1,27 @@
+# User personal files
+assignment/*.pdf
+.claude/skills/rubric-feedback/references/past-assignments/*.md
+
+# Node
+node_modules/
+npm-debug.log*
+*.tgz
+
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+.playwright/
+.venv/
+venv/
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Editor
+.idea/
+.vscode/
+*.swp
+*.swo

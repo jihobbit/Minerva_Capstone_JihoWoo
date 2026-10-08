@@ -1,5 +1,10 @@
 # minerva-capstone-jihowoo
 
+[![MIT License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
+[![Claude Code](https://img.shields.io/badge/platform-Claude%20Code-blue.svg)](https://docs.claude.com/en/docs/claude-code/overview)
+[![Cursor](https://img.shields.io/badge/platform-Cursor-purple.svg)](https://cursor.so)
+[![Codex](https://img.shields.io/badge/platform-Codex-black.svg)](https://openai.com/codex)
+
 A [Claude Code](https://docs.claude.com/en/docs/claude-code/overview) skill that gives structured feedback on rubric (HC / LO) applications in Minerva assignment PDFs.
 
 For each tagged rubric it evaluates three dimensions:
@@ -7,9 +12,16 @@ For each tagged rubric it evaluates three dimensions:
 - **(b) Footnote** — Strong / Adequate / Weak, with specific reasoning
 - **(c) Past professor feedback** — did you address what was flagged in prior assignments?
 
+**Features:**
+- Discipline-aware evaluation — AH, CS, NS, SS parallel subagents *(coming soon)*
+- Google Drive PDF input + Google Docs feedback export *(coming soon)*
+- Cross-platform: Claude Code, Cursor, Codex compatible *(coming soon)*
+
 ---
 
 ## Installation
+
+### Claude Code
 
 Run this in your project directory:
 
@@ -22,6 +34,14 @@ Then install Playwright (needed to scrape past assignment feedback):
 ```bash
 pip install playwright && playwright install chromium
 ```
+
+### Cursor *(coming soon)*
+
+Copy `.cursor/rules/rubric-feedback.mdc` to your project's `.cursor/rules/` directory.
+
+### Codex *(coming soon)*
+
+The `AGENTS.md` file at the root defines the rubric feedback agent for OpenAI Codex environments.
 
 ---
 
