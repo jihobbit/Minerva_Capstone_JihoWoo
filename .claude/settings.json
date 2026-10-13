@@ -8,7 +8,7 @@
             "type": "agent",
             "model": "claude-haiku-4-5-20251001",
             "prompt": "Find the student assignment PDF in ./assignment/ using Glob with pattern \"assignment/*.pdf\". Read the PDF using the Read tool.\n\nAnalyze the text for grammar errors only (subject-verb agreement, tense inconsistency, run-on sentences, misplaced modifiers, etc.).\n\nOutput ONLY valid JSON:\n{\"hookSpecificOutput\": {\"hookEventName\": \"PreToolUse\", \"additionalContext\": \"## Grammar Check\\n[your findings]\"}}\n\nFor each error, quote the problematic text and provide the correction. If no errors found, write 'No grammar issues found.'",
-            "statusMessage": "Haiku: grammar 검사 중...",
+            "statusMessage": "Haiku: checking grammar...",
             "timeout": 120,
             "async": true
           },
@@ -16,7 +16,7 @@
             "type": "agent",
             "model": "claude-haiku-4-5-20251001",
             "prompt": "Find the student assignment PDF in ./assignment/ using Glob with pattern \"assignment/*.pdf\". Read the PDF using the Read tool.\n\nAnalyze the text for typos and spelling mistakes only.\n\nOutput ONLY valid JSON:\n{\"hookSpecificOutput\": {\"hookEventName\": \"PreToolUse\", \"additionalContext\": \"## Typo & Spelling Check\\n[your findings]\"}}\n\nFor each error, quote the incorrect word and provide the correct spelling. If no errors found, write 'No typos or spelling issues found.'",
-            "statusMessage": "Haiku: typo & spelling 검사 중...",
+            "statusMessage": "Haiku: checking typos & spelling...",
             "timeout": 120,
             "async": true
           }
