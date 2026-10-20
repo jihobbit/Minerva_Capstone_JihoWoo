@@ -2,7 +2,7 @@
 name: rubric-feedback
 description: Give actionable feedback on how well a Minerva-style rubric (HC / LO, tagged like #audience, #thesis, #communication) is applied and contextualized in an assignment PDF. Reads the current PDF from ./assignment/ and past assignments + professor feedback from ./references/past-assignments/. Use for checking rubric applications, contextualization footnotes, and learning-outcome quality before submission.
 disable-model-invocation: true
-allowed-tools: Read Glob Bash(ls:*) Bash(find:*) Bash(python3:*)
+allowed-tools: Read Glob Bash(ls:*) Bash(find:*) Bash(python3:*) mcp__claude_ai_Google_Drive__search_files mcp__claude_ai_Google_Drive__read_file_content mcp__claude_ai_Google_Drive__get_file_metadata
 ---
 
 # Rubric Feedback
@@ -18,12 +18,18 @@ Give actionable, specific feedback on how well a student applied and contextuali
 /rubric-feedback https://forum.minerva.edu/.../assessments/123
 /rubric-feedback https://url1 https://url2
 /rubric-feedback https://url1 https://url2 audience
+/rubric-feedback https://docs.google.com/document/d/<id>/edit
+/rubric-feedback https://docs.google.com/document/d/<id>/edit audience
+/rubric-feedback "My Assignment Title"
+/rubric-feedback "My Assignment Title" audience,thesis
 ```
 
 `$ARGUMENTS` is parsed as follows:
-- Tokens starting with `https://` → **past-assignment URLs** to scrape before evaluating
+- Token matching `https://docs.google.com/document/d/...` → **Google Docs URL** (read assignment from Drive)
+- Token matching `https://forum.minerva.edu/...` → **past-assignment URL** to scrape before evaluating
+- Token wrapped in double quotes (e.g. `"Essay Title"`) → **Drive title search** (search Drive for that filename)
 - All other tokens → **rubric filter** (comma-separated or space-separated rubric names)
-- Empty → scrape nothing, evaluate every HC tag found in the current assignment
+- Empty → use local PDF from `./assignment/`, evaluate every HC tag found
 
 ---
 
@@ -31,13 +37,15 @@ Give actionable, specific feedback on how well a student applied and contextuali
 
 ### Step 1 — Parse $ARGUMENTS
 
-Split `$ARGUMENTS` by whitespace. Classify each token:
-- Starts with `https://` → add to **url_list**
-- Otherwise → add to **rubric_filter** (treat the whole non-URL portion as comma-separated rubric names)
+Split `$ARGUMENTS` by whitespace (respecting quoted strings). Classify each token:
+- Matches `https://docs.google.com/document/d/<id>...` → set **drive_doc_url** (extract file ID from path)
+- Matches `https://forum.minerva.edu/...` → add to **minerva_url_list**
+- Wrapped in double quotes → set **drive_search_title** (strip quotes)
+- Otherwise → add to **rubric_filter** (comma-separated rubric names)
 
 ### Step 2 — Scrape past-assignment URLs (if any)
 
-If `url_list` is non-empty, run the scrape script once with all URLs:
+If `minerva_url_list` is non-empty, run the scrape script once with all URLs:
 
 ```bash
 python3 scripts/scrape-feedback.py URL1 URL2 ...
@@ -47,16 +55,33 @@ The script opens a browser window. If the user is not yet logged in, Google SSO 
 
 If the script exits with an error, report the error and stop — do not proceed on missing data.
 
-### Step 3 — Find the current assignment PDF
+### Step 3 — Find the current assignment
 
+**Path A — Google Docs URL** (`drive_doc_url` is set):
+1. Extract the file ID from the URL: the segment between `/d/` and the next `/` or `?`.
+2. Call `mcp__claude_ai_Google_Drive__get_file_metadata` with that file ID to confirm the file exists and is accessible.
+3. If not found or permission denied: report the error and stop.
+
+**Path B — Drive title search** (`drive_search_title` is set):
+1. Call `mcp__claude_ai_Google_Drive__search_files` with query: `title contains '<drive_search_title>'`
+2. If no results: tell the user no file with that title was found in Drive and stop.
+3. If multiple results: list titles + last-modified dates and ask the user which one. Don't guess.
+4. If exactly one result: use it.
+
+**Path C — Local PDF** (neither Drive option set):
 Look in `./assignment/` (Glob: `assignment/*.pdf` or `ls assignment/`).
+- Exactly one PDF: use it.
+- Multiple PDFs: list filenames and ask which one. Don't guess.
+- No PDFs: tell the user to drop a PDF into `./assignment/` or provide a Google Docs URL / title.
 
-- **Exactly one PDF**: use it.
-- **Multiple PDFs**: list filenames and ask which one. Don't guess.
-- **No PDFs**: tell the user to drop a PDF into `./assignment/` and retry.
+### Step 4 — Read the current assignment content
 
-### Step 4 — Read the current PDF
+**Path A or B (Drive):**
+Call `mcp__claude_ai_Google_Drive__read_file_content` with the resolved file ID.
+- If content is empty or the file type is unsupported: report the error and stop.
+- Treat the returned text as the assignment body. Footnote markers may appear as numbered references — preserve them.
 
+**Path C (Local PDF):**
 Use the Read tool on the PDF path. Preserve footnote markers — losing them breaks evaluation. If text looks garbled (scanned PDF), say so and stop.
 
 Always re-read fresh even if the same file appeared in earlier messages.
