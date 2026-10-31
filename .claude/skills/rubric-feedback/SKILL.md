@@ -2,7 +2,7 @@
 name: rubric-feedback
 description: Give actionable feedback on how well a Minerva-style rubric (HC / LO, tagged like #audience, #thesis, #communication) is applied and contextualized in an assignment PDF. Reads the current PDF from ./assignment/ and past assignments + professor feedback from ./references/past-assignments/. Use for checking rubric applications, contextualization footnotes, and learning-outcome quality before submission.
 disable-model-invocation: true
-allowed-tools: Read Glob Bash(ls:*) Bash(find:*) Bash(python3:*) mcp__claude_ai_Google_Drive__search_files mcp__claude_ai_Google_Drive__read_file_content mcp__claude_ai_Google_Drive__get_file_metadata
+allowed-tools: Read Glob Bash(ls:*) Bash(find:*) Bash(python3:*) mcp__claude_ai_Google_Drive__search_files mcp__claude_ai_Google_Drive__read_file_content mcp__claude_ai_Google_Drive__get_file_metadata Agent
 ---
 
 # Rubric Feedback
@@ -107,64 +107,43 @@ If no reference file exists: "I don't have a reference file for `#<rubric>` yet 
 2. Read every feedback `.md` file. Collect all professor comments that apply to the rubric(s) being evaluated.
 3. If no feedback files exist: skip dimension (c) and note "No past feedback on file."
 
-### Step 7 — Evaluate three dimensions per HC application
+### Step 7 — Dispatch 4 parallel discipline agents
 
-Each dimension is independent — they fail and pass separately.
+Read the agent template from `agents/discipline-agent.md`. Then build each agent's prompt by filling in:
+- `{DISCIPLINE}` / `{CORNERSTONE_COURSE}` — from the table below
+- `{RUBRIC_FILE_CONTENT}` — full text of that discipline's HC file (read it now)
+- `{ASSIGNMENT_TEXT}` — the full assignment from Step 4
+- `{PAST_FEEDBACK}` — compiled professor feedback from Step 6
+- `{RUBRIC_FILTER}` — the rubric_filter list, or "ALL TAGGED HCs" if empty
 
-**Dimension (a) — Body HC Contextualization**
+| Agent | Discipline | Cornerstone Course | Rubric File |
+|-------|-----------|-------------------|-------------|
+| 1 | Social Science | Complex Systems | `references/rubrics/hc_social_science.md` |
+| 2 | Art & History | Multimodal Communications | `references/rubrics/hc_art_history.md` |
+| 3 | Computer Science | Formal Analyses | `references/rubrics/hc_computer_science.md` |
+| 4 | Natural Science | Empirical Analyses | `references/rubrics/hc_natural_science.md` |
 
-Does the body text actually demonstrate and contextualize the HC, or is the tag performative?
+Dispatch all 4 simultaneously in a **single response** (parallel) using **model: sonnet**. Collect all 4 outputs before proceeding.
 
-- Is there a specific, visible choice that embodies the HC — something a reader without the tag would still recognize?
-- Is the move deliberate (not just incidental to how the piece would have been written anyway)?
-- Does it resemble the strong body example in the rubric reference?
+If a rubric_filter is set and none of its rubrics belong to a given discipline, skip that agent — do not spawn it.
 
-**Dimension (b) — Footnote: How Strong**
+### Step 8 — Coordinator synthesis
 
-Rate: **Strong / Adequate / Weak**
+Read `agents/coordinator-agent.md` for the coordinator's instructions.
 
-- Does it name the *specific choice* made? ("I adjusted it" ≠ "I removed the jargon and replaced it with a cooking analogy.")
-- Does it tie the choice to the rubric criteria with a visible "because" link?
-- Does it go beyond paraphrasing the rubric definition?
-- Could someone reading only the footnote understand exactly what move was made and why?
+Spawn a single coordinator agent using **model: sonnet** whose prompt contains:
+- All collected discipline agent outputs (labeled by discipline)
+- The coordinator instructions from `agents/coordinator-agent.md`
 
-**Dimension (c) — Prof. Feedback Reflection**
+The coordinator merges, deduplicates, and formats the final report.
 
-For each issue the professor flagged in any past feedback file for this rubric:
-- State the issue and which past assignment it came from.
-- State whether the current draft: **addressed / partially addressed / not addressed**.
-- Give one-line evidence.
+### Step 9 — Deliver feedback
 
-If no past feedback exists for this rubric: write "No past feedback on file for #<rubric>."
-
-### Step 8 — Deliver feedback
-
-Use this format for each HC application. Write in **English**. No preamble, no restating what the student knows.
-
-```
-**#<rubric>** — <page or section>
-
-**(a) Body (HC Contextualization)**
-<One-line evaluation: what the move is and whether it actually demonstrates the HC.>
-Action items:
-- <specific, concrete action — not "be more specific" but exactly what to add/change>
-- <second item if needed>
-
-**(b) Footnote** — <Strong / Adequate / Weak>
-<One-line reason for the rating.>
-Action items:
-- <if Weak or Adequate: concrete rewrite suggestion or what's missing>
-
-**(c) Prof. Feedback Reflection**
-- [<past assignment name>] Professor flagged: <issue>. Current draft: <addressed / partially / not addressed> — <evidence>.
-- (repeat per past issue)
-Action items:
-- <only if something is unaddressed: what exactly to fix>
-```
+Output the coordinator's synthesized report directly. Write in **English**. No preamble.
 
 Target: 8–15 lines per HC application. If all three dimensions are strong, say so in one line each and stop. Don't manufacture weaknesses.
 
-Separate multiple HC applications with a blank line. Add a one-line overall verdict at the end only if it adds something new.
+Separate multiple HC applications with a blank line. One-line overall verdict at the end only if it adds something new.
 
 ---
 

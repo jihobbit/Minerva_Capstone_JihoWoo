@@ -5,8 +5,6 @@ This index lists the rubrics currently supported by the skill. Each rubric has a
 | Rubric | File | One-line summary |
 |---|---|---|
 | `#audience` | `audience.md` | Tailor work to the situation and perspective of the receiver. |
-| `#ah-pel-challenges` | `ah-pel-challenges.md` | Anticipate and respond to challenges; make clear their significance for your defense. |
-| `#cs156-MLExplaination` | `cs156-MLExplaination.md` | Clearly articulate ML systems and techniques using descriptions, notation, and visualizations. |
 | `#constraints` | `constraints.md` | Identify and apply constraint satisfaction to solve problems. |
 | `#levelsofanalysis` | `levelsofanalysis.md` | Analyze a complex system by integrating explanations across multiple levels and their interactions. |
 | `#purpose` | `purpose.md` | Articulate a mission statement that coherently connects values, goals, and operating procedures. |
